@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <title>Incentive Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- IMAGE LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body { font-family: Arial; margin: 0; background: #f5f5f5; }
+
+    .header {
+      background: #e60000;
+      color: white;
+      text-align: center;
+      padding: 18px 10px;
+    }
+
+    .main-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .sub-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      font-weight: 300;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+    }
+
+    label { font-weight: bold; }
+
+    select, input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #e60000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #b30000; }
+
+    .result-box {
+      background: #fff2f2;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      border-left: 5px solid #e60000;
+    }
+
+    .highlight {
+      font-size: 20px;
+      font-weight: bold;
+      color: #e60000;
+      text-align: center;
+    }
+
+    #slabUsed {
+      font-weight: bold;
+      padding: 5px 12px;
+      border-radius: 20px;
+      color: white;
+      display: inline-block;
+    }
+
+    #message {
+      color: red;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #e60000;
+      color: white;
+    }
+
+    th, td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    /* ✅ POPUP */
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    .popup-box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="main-title">Incentive Calculator</div>
+  <div class="sub-title">Know Your Earnings</div>
+</div>
+
+<div class="container">
+
+<label>Mode</label>
+<select id="mode" onchange="toggleAON()">
+  <option value="FTD">FTD</option>
+  <option value="MTD">MTD</option>
+</select>
+
+<div id="aonSection">
+  <label>AON</label>
+  <select id="aon">
+    <option value="lte3">&le; 3 Months</option>
+    <option value="gt3">&gt; 3 Months</option>
+  </select>
+</div>
+
+<label>Name</label>
+<input type="text" id="username" placeholder="Enter Name" oninput="validateName(this)">
+
+<label>Role</label>
+<select id="role" onchange="loadInputs()">
+  <option value="AF">AF</option>
+  <option value="XFE">XFE</option>
+  <option value="OC">OC</option>
+</select>
+
+<h3>Enter Lines</h3>
+<div id="inputs" class="grid"></div>
+
+<button onclick="calculate()">Calculate Estimated Incentive</button>
+
+<div id="message"></div>
+
+<div id="downloadArea">
+
+<div class="result-box">Name: <span id="displayName">-</span></div>
+<div class="result-box">Total Lines: <span id="total">0</span></div>
+<div class="result-box">Performance Level: <span id="slabUsed">-</span></div>
+<div class="result-box highlight">₹ <span id="incentive">0</span></div>
+
+<h3>Breakdown</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Line</th>
+      <th>Count</th>
+      <th>Rate</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+</div>
+
+<div style="margin-top:20px;">
+  <button onclick="downloadImage()">Download Image</button>
+</div>
+
+</div>
+
+<!-- ✅ POPUP -->
+<div id="popup" class="popup-overlay">
+  <div class="popup-box">
+    <p>I know you are not sazid, he is the one created me...so don't play with me 😏</p>
+    <button onclick="closePopup()">Ohh you caught me I won't repeat</button>
+  </div>
+</div>
+
+<script>
+
+const rolesData = {
+  AF: {
+    Standalone: [30,60,90],
+    "Add On": [30,60,90],
+    APB: [7.5,15,22.5],
+    MNP: [90,180,270],
+    Family: [150,300,450],
+    EMI: [150,300,450],
+    "Wi-Fi 499": [125,250,375],
+    "Wi-Fi 599+": [200,400,600],
+    "Wi-Fi 899+": [300,600,900],
+    "COCP NC": [10,10,10],
+    "COCP P2P": [10,10,10],
+    "COCP MNP": [20,20,20],
+    OAP: [100,100,100],
+    DTH: [100,100,100]
+  }
+};
+
+function toggleAON(){
+  document.getElementById("aonSection").style.display =
+    document.getElementById("mode").value==="FTD" ? "none" : "block";
+}
+
+function validateName(input){
+  input.value = input.value.replace(/[^a-zA-Z ]/g,'');
+}
+
+function loadInputs(){
+  let role=document.getElementById("role").value;
+  let div=document.getElementById("inputs");
+
+  div.innerHTML="";
+
+  if(!rolesData[role]){
+    div.innerHTML="<p style='color:red;'>⚠ This role is not configured yet</p>";
+    return;
+  }
+
+  let data=rolesData[role];
+
+  for(let key in data){
+    div.innerHTML+=`
+    <div>
+      <label>${key}</label>
+      <input type="number" id="${key}" value="0">
+    </div>`;
+  }
+}
+
+function getColumnIndex(total,mode,aon){
+  if(mode==="FTD"||aon==="lte3"){
+    if(total<=109) return 0;
+    else if(total<=134) return 1;
+    else return 2;
+  } else {
+    if(total<80) return -1;
+    else if(total<=109) return 0;
+    else if(total<=134) return 1;
+    else return 2;
+  }
+}
+
+function calculate(){
+
+  let name=document.getElementById("username").value.trim();
+
+  // ✅ Popup Easter egg
+  if(name.toLowerCase()==="sazid"){
+    document.getElementById("popup").style.display="flex";
+  }
+
+  let role=document.getElementById("role").value;
+  let mode=document.getElementById("mode").value;
+  let aon=document.getElementById("aon").value;
+  let tbody=document.getElementById("tableBody");
+  let slab=document.getElementById("slabUsed");
+
+  tbody.innerHTML="";
+  document.getElementById("message").innerText="";
+
+  let total=0,incentive=0,values={};
+
+  for(let key in rolesData[role]){
+    let val=Number(document.getElementById(key).value)||0;
+    values[key]=val;
+    total+=val;
+  }
+
+  document.getElementById("displayName").innerText=name||"-";
+
+  let colIndex=getColumnIndex(total,mode,aon);
+
+  let colors=["green","orange","red"];
+  let texts=["Level 1","Level 2","Level 3"];
+
+  slab.innerText=texts[colIndex]||"-";
+  slab.style.background=colors[colIndex]||"gray";
+
+  if(colIndex !== -1){
+
+    for(let key in values){
+      let rate=rolesData[role][key][colIndex];
+      let amount=values[key]*rate;
+      incentive+=amount;
+
+      tbody.innerHTML+=`
+      <tr>
+        <td>${key}</td>
+        <td>${values[key]}</td>
+        <td>${rate}</td>
+        <td>${amount}</td>
+      </tr>`;
+    }
+
+  } else {
+
+    document.getElementById("message").innerText =
+      "⚠ Below 80 lines – no incentive (AON > 3)";
+
+    incentive = 0;
+  }
+
+  document.getElementById("total").innerText=total;
+  document.getElementById("incentive").innerText=Math.round(incentive);
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display="none";
+}
+
+function downloadImage(){
+  html2canvas(document.getElementById("downloadArea")).then(canvas=>{
+    let link=document.createElement("a");
+    link.download="Incentive_Report.jpg";
+    link.href=canvas.toDataURL();
+    link.click();
+  });
+}
+
+toggleAON();
+loadInputs();
+
+</script>
+
+</body>
+</html>
