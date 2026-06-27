@@ -1,372 +1,319 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <title>Incentive Calculator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- FONT -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family: Arial; margin:0; background:#f5f5f5; }
 
-  <!-- IMAGE LIBRARY -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+.header { background:#e60000; color:white; text-align:center; padding:18px; }
+.main-title { font-family:Poppins; font-size:24px; font-weight:600; }
 
-  <style>
-    body { font-family: Arial; margin: 0; background: #f5f5f5; }
+.container { max-width:700px; margin:10px auto; background:white; padding:20px; border-radius:10px; }
 
-    .header {
-      background: #e60000;
-      color: white;
-      text-align: center;
-      padding: 18px 10px;
-    }
+input,select{
+width:100%; padding:10px; margin-bottom:12px;
+border-radius:6px; border:1px solid #ccc; font-size:16px;
+}
 
-    .main-title {
-      font-family: 'Poppins', sans-serif;
-      font-size: 24px;
-      font-weight: 600;
-    }
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-    .sub-title {
-      font-family: 'Poppins', sans-serif;
-      font-size: 12px;
-      font-weight: 300;
-      opacity: 0.85;
-      margin-top: 4px;
-    }
+button{
+width:100%;padding:12px;background:#e60000;
+color:white;border:none;border-radius:6px;font-size:16px;
+}
 
-    .container {
-      max-width: 700px;
-      margin: 20px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-    }
+#message{text-align:center;color:red;font-weight:bold;}
 
-    label { font-weight: bold; }
+.result-box{background:#fff2f2;padding:10px;margin-top:10px;}
 
-    select, input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+.highlight{text-align:center;color:#e60000;font-size:20px;font-weight:bold;}
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
+#slabUsed{padding:5px 10px;border-radius:20px;color:white;}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #e60000;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      margin-top: 8px;
-      cursor: pointer;
-    }
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid #ddd;padding:6px;text-align:center;}
+th{background:#e60000;color:white;}
 
-    button:hover { background: #b30000; }
+@media(max-width:600px){
+.grid{grid-template-columns:1fr;}
+}
 
-    .result-box {
-      background: #fff2f2;
-      padding: 12px;
-      border-radius: 6px;
-      margin-top: 10px;
-      border-left: 5px solid #e60000;
-    }
-
-    .highlight {
-      font-size: 20px;
-      font-weight: bold;
-      color: #e60000;
-      text-align: center;
-    }
-
-    #slabUsed {
-      font-weight: bold;
-      padding: 5px 12px;
-      border-radius: 20px;
-      color: white;
-      display: inline-block;
-    }
-
-    #message {
-      color: red;
-      text-align: center;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    table {
-      width: 100%;
-      margin-top: 15px;
-      border-collapse: collapse;
-    }
-
-    th {
-      background: #e60000;
-      color: white;
-    }
-
-    th, td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    /* ✅ POPUP */
-    .popup-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 999;
-    }
-
-    .popup-box {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 300px;
-    }
-  </style>
+.popup{
+display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,0.6);justify-content:center;align-items:center;
+}
+.popup-box{
+background:white;padding:20px;border-radius:10px;text-align:center;
+width:90%;max-width:300px;
+}
+</style>
 </head>
 
 <body>
 
 <div class="header">
-  <div class="main-title">Incentive Calculator</div>
-  <div class="sub-title">Know Your Earnings</div>
+<div class="main-title">Incentive Calculator</div>
+<div class="sub-title">Know Your Earnings</div>
 </div>
 
 <div class="container">
 
+<label>Name</label>
+<input id="username">
+
+<label>Role</label>
+<select id="role" onchange="toggleOC(); loadInputs();">
+<option value="AF">AF</option>
+<option value="OC">OC</option>
+</select>
+
 <label>Mode</label>
 <select id="mode" onchange="toggleAON()">
-  <option value="FTD">FTD</option>
-  <option value="MTD">MTD</option>
+<option value="FTD">FTD</option>
+<option value="MTD">MTD</option>
 </select>
 
 <div id="aonSection">
-  <label>AON</label>
-  <select id="aon">
-    <option value="lte3">&le; 3 Months</option>
-    <option value="gt3">&gt; 3 Months</option>
-  </select>
+<label>AON</label>
+<select id="aon">
+<option value="lte3">≤ 3 Months</option>
+<option value="gt3">> 3 Months</option>
+</select>
 </div>
 
-<label>Name</label>
-<input type="text" id="username" placeholder="Enter Name" oninput="validateName(this)">
+<div id="ocFields" style="display:none;">
+<label>L2A %</label>
+<input id="l2a" type="number">
 
-<label>Role</label>
-<select id="role" onchange="loadInputs()">
-  <option value="AF">AF</option>
-  <option value="XFE">XFE</option>
-  <option value="OC">OC</option>
-</select>
+<label>Lead Count</label>
+<input id="leads" type="number">
+</div>
+
+<label>Total Lines</label>
+<input id="manualTotal" type="number">
 
 <h3>Enter Lines</h3>
 <div id="inputs" class="grid"></div>
 
-<button onclick="calculate()">Calculate Estimated Incentive</button>
+<button onclick="calculate()">Calculate</button>
 
 <div id="message"></div>
 
 <div id="downloadArea">
-
 <div class="result-box">Name: <span id="displayName">-</span></div>
 <div class="result-box">Total Lines: <span id="total">0</span></div>
-<div class="result-box">Performance Level: <span id="slabUsed">-</span></div>
+<div class="result-box">Level: <span id="slabUsed">-</span></div>
 <div class="result-box highlight">₹ <span id="incentive">0</span></div>
 
-<h3>Breakdown</h3>
-
 <table>
-  <thead>
-    <tr>
-      <th>Line</th>
-      <th>Count</th>
-      <th>Rate</th>
-      <th>Amount</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
+<thead>
+<tr><th>Line</th><th>Count</th><th>Rate</th><th>Estimated Amount</th></tr>
+</thead>
+<tbody id="tableBody"></tbody>
 </table>
+</div>
+
+<button onclick="downloadImage()">Download Report</button>
 
 </div>
 
-<div style="margin-top:20px;">
-  <button onclick="downloadImage()">Download Image</button>
+<div id="popup" class="popup">
+<div class="popup-box">
+<p>I know you are not sazid 😏, because he is the one who created me</p>
+<button onclick="popup.style.display='none'">Opps, Sorry!!</button>
 </div>
-
-</div>
-
-<!-- ✅ POPUP -->
-<div id="popup" class="popup-overlay">
-  <div class="popup-box">
-    <p>I know you are not sazid, he is the one created me...so don't play with me 😏</p>
-    <button onclick="closePopup()">Ohh you caught me I won't repeat</button>
-  </div>
 </div>
 
 <script>
 
+// ✅ FINAL DATA
 const rolesData = {
-  AF: {
-    Standalone: [30,60,90],
-    "Add On": [30,60,90],
-    APB: [7.5,15,22.5],
-    MNP: [90,180,270],
-    Family: [150,300,450],
-    EMI: [150,300,450],
-    "Wi-Fi 499": [125,250,375],
-    "Wi-Fi 599+": [200,400,600],
-    "Wi-Fi 899+": [300,600,900],
-    "COCP NC": [10,10,10],
-    "COCP P2P": [10,10,10],
-    "COCP MNP": [20,20,20],
-    OAP: [100,100,100],
-    DTH: [100,100,100]
-  }
+
+AF:{
+Standalone:[30,60,90],
+"Add On":[30,60,90],
+APB:[7.5,15,22.5],
+MNP:[90,180,270],
+Family:[150,300,450],
+EMI:[150,300,450],
+"Wi-Fi 499":[125,250,375],
+"Wi-Fi 599+":[200,400,600],
+"Wi-Fi 899+":[300,600,900],
+"COCP NC":[10,10,10],
+"COCP P2P":[10,10,10],
+"COCP MNP":[20,20,20],
+OAP:[100,100,100],
+DTH:[100,100,100]
+},
+
+OC:{
+Standalone:[30,60,90],
+"Add On":[30,60,90],
+APB:[7.5,15,22.5],
+MNP:[90,180,270],
+Family:[150,300,450],
+EMI:[0,0,0],
+"Wi-Fi 499":[125,250,375],
+"Wi-Fi 599+":[200,400,600],
+"Wi-Fi 899+":[300,600,900],
+"COCP NC":[0,0,0],
+"COCP P2P":[0,0,0],
+"COCP MNP":[0,0,0],
+OAP:[100,100,100],
+DTH:[0,0,0]
+}
+
 };
 
 function toggleAON(){
-  document.getElementById("aonSection").style.display =
-    document.getElementById("mode").value==="FTD" ? "none" : "block";
+aonSection.style.display = mode.value==="FTD" ? "none":"block";
 }
 
-function validateName(input){
-  input.value = input.value.replace(/[^a-zA-Z ]/g,'');
+function toggleOC(){
+ocFields.style.display = role.value==="OC" ? "block":"none";
 }
 
 function loadInputs(){
-  let role=document.getElementById("role").value;
-  let div=document.getElementById("inputs");
+let r = role.value;
+let data = rolesData[r];
 
-  div.innerHTML="";
-
-  if(!rolesData[role]){
-    div.innerHTML="<p style='color:red;'>⚠ This role is not configured yet</p>";
-    return;
-  }
-
-  let data=rolesData[role];
-
-  for(let key in data){
-    div.innerHTML+=`
-    <div>
-      <label>${key}</label>
-      <input type="number" id="${key}" value="0">
-    </div>`;
-  }
+inputs.innerHTML="";
+for(let key in data){
+inputs.innerHTML+=`
+<div>
+<label>${key}</label>
+<input type="number" id="${key}" value="0">
+</div>`;
 }
-
-function getColumnIndex(total,mode,aon){
-  if(mode==="FTD"||aon==="lte3"){
-    if(total<=109) return 0;
-    else if(total<=134) return 1;
-    else return 2;
-  } else {
-    if(total<80) return -1;
-    else if(total<=109) return 0;
-    else if(total<=134) return 1;
-    else return 2;
-  }
 }
 
 function calculate(){
 
-  let name=document.getElementById("username").value.trim();
+message.innerText="";
+tableBody.innerHTML="";
 
-  // ✅ Popup Easter egg
-  if(name.toLowerCase()==="sazid"){
-    document.getElementById("popup").style.display="flex";
-  }
+let name=username.value.trim();
+let roleVal=role.value;
+let totalLines=Number(manualTotal.value)||0;
 
-  let role=document.getElementById("role").value;
-  let mode=document.getElementById("mode").value;
-  let aon=document.getElementById("aon").value;
-  let tbody=document.getElementById("tableBody");
-  let slab=document.getElementById("slabUsed");
-
-  tbody.innerHTML="";
-  document.getElementById("message").innerText="";
-
-  let total=0,incentive=0,values={};
-
-  for(let key in rolesData[role]){
-    let val=Number(document.getElementById(key).value)||0;
-    values[key]=val;
-    total+=val;
-  }
-
-  document.getElementById("displayName").innerText=name||"-";
-
-  let colIndex=getColumnIndex(total,mode,aon);
-
-  let colors=["green","orange","red"];
-  let texts=["Level 1","Level 2","Level 3"];
-
-  slab.innerText=texts[colIndex]||"-";
-  slab.style.background=colors[colIndex]||"gray";
-
-  if(colIndex !== -1){
-
-    for(let key in values){
-      let rate=rolesData[role][key][colIndex];
-      let amount=values[key]*rate;
-      incentive+=amount;
-
-      tbody.innerHTML+=`
-      <tr>
-        <td>${key}</td>
-        <td>${values[key]}</td>
-        <td>${rate}</td>
-        <td>${amount}</td>
-      </tr>`;
-    }
-
-  } else {
-
-    document.getElementById("message").innerText =
-      "⚠ Below 80 lines – no incentive (AON > 3)";
-
-    incentive = 0;
-  }
-
-  document.getElementById("total").innerText=total;
-  document.getElementById("incentive").innerText=Math.round(incentive);
+// ✅ popup
+if(name.toLowerCase()==="sazid"){
+popup.style.display="flex";
+return;
 }
 
-function closePopup(){
-  document.getElementById("popup").style.display="none";
+if(!name){
+message.innerText="Enter name";
+return;
+}
+
+let level=0;
+
+/* ✅ AF */
+if(roleVal==="AF"){
+
+if(mode.value==="MTD" && aon.value==="gt3" && totalLines<80){
+message.innerText="Below 80 lines – no incentive";
+return;
+}
+
+if(totalLines<=109) level=0;
+else if(totalLines<=134) level=1;
+else level=2;
+
+}
+
+/* ✅ OC */
+else{
+
+let l2aVal=Number(document.getElementById("l2a").value)||0;
+let leadsVal=Number(document.getElementById("leads").value)||0;
+
+// CASE 1
+if(mode.value==="FTD" || (mode.value==="MTD" && aon.value==="lte3")){
+
+if(l2aVal<=17) level=0;
+else if(l2aVal<=23) level=1;
+else level=2;
+
+}
+
+// CASE 2
+else{
+
+if(totalLines<40){
+message.innerText="Lines < 40 → no incentive";
+return;
+}
+
+if(leadsVal<250){
+message.innerText="Leads < 250 → no incentive";
+return;
+}
+
+if(l2aVal<=11){
+message.innerText="L2A < 12% → no incentive";
+return;
+}
+else if(l2aVal<=17) level=0;
+else if(l2aVal<=23) level=1;
+else level=2;
+
+}
+
+}
+
+/* ✅ CALC */
+
+let data = rolesData[roleVal];
+let totalAmount=0;
+
+for(let key in data){
+
+let count=Number(document.getElementById(key).value)||0;
+let rate=data[key][level];
+let amount=count*rate;
+
+totalAmount+=amount;
+
+tableBody.innerHTML+=`
+<tr>
+<td>${key}</td>
+<td>${count}</td>
+<td>${rate}</td>
+<td>${amount}</td>
+</tr>`;
+}
+
+displayName.innerText=name;
+total.innerText=totalLines;
+
+let colors=["green","orange","red"];
+let texts=["Level 1","Level 2","Level 3"];
+
+slabUsed.innerText=texts[level];
+slabUsed.style.background=colors[level];
+
+incentive.innerText=Math.round(totalAmount);
 }
 
 function downloadImage(){
-  html2canvas(document.getElementById("downloadArea")).then(canvas=>{
-    let link=document.createElement("a");
-    link.download="Incentive_Report.jpg";
-    link.href=canvas.toDataURL();
-    link.click();
-  });
+html2canvas(downloadArea).then(canvas=>{
+let link=document.createElement("a");
+link.href=canvas.toDataURL();
+link.download="report.jpg";
+link.click();
+});
 }
 
-toggleAON();
 loadInputs();
+toggleAON();
+toggleOC();
 
 </script>
 
